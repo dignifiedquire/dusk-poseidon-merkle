@@ -1,5 +1,6 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use dusk_poseidon_merkle::*;
+use ff::PrimeField;
 use rand::rngs::OsRng;
 use rand::seq::SliceRandom;
 use sha2::{Digest, Sha256, Sha512};
@@ -8,7 +9,7 @@ fn bench_hash(c: &mut Criterion) {
     let scalars: Vec<Scalar> = std::iter::repeat(())
         .take(1000)
         .enumerate()
-        .map(|(i, _)| Scalar::from(i as u64))
+        .map(|(i, _)| scalar_from_u64(i as u64))
         .collect();
 
     let mut group = c.benchmark_group("hash");
@@ -24,7 +25,9 @@ fn bench_hash(c: &mut Criterion) {
                     .take(MERKLE_ARITY)
                     .map(|_| s.choose(&mut OsRng).unwrap())
                     .for_each(|scalar| {
-                        h.input(scalar.as_bytes());
+                        for val in scalar.into_repr().as_ref() {
+                            h.input(&val.to_le_bytes());
+                        }
                     });
 
                 h.result();
@@ -43,7 +46,9 @@ fn bench_hash(c: &mut Criterion) {
                     .take(MERKLE_ARITY)
                     .map(|_| s.choose(&mut OsRng).unwrap())
                     .for_each(|scalar| {
-                        h.input(scalar.as_bytes());
+                        for val in scalar.into_repr().as_ref() {
+                            h.input(&val.to_le_bytes());
+                        }
                     });
 
                 h.result();

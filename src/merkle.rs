@@ -5,13 +5,13 @@ use std::ops;
 
 /// The merkle tree will accept up to `MERKLE_ARITY * MERKLE_WIDTH` leaves.
 #[derive(Copy, Clone)]
-pub struct MerkleTree<T: PoseidonLeaf> {
-    root: Option<T>,
-    leaves: [Option<T>; MERKLE_WIDTH],
-    raw: [[Option<T>; MERKLE_WIDTH]; MERKLE_HEIGHT + 1],
+pub struct MerkleTree {
+    root: Option<Scalar>,
+    leaves: [Option<Scalar>; MERKLE_WIDTH],
+    raw: [[Option<Scalar>; MERKLE_WIDTH]; MERKLE_HEIGHT + 1],
 }
 
-impl<T: PoseidonLeaf> Default for MerkleTree<T> {
+impl Default for MerkleTree {
     fn default() -> Self {
         MerkleTree {
             raw: [[None; MERKLE_WIDTH]; MERKLE_HEIGHT + 1],
@@ -21,9 +21,9 @@ impl<T: PoseidonLeaf> Default for MerkleTree<T> {
     }
 }
 
-impl<T: PoseidonLeaf> MerkleTree<T> {
+impl MerkleTree {
     /// Return a reference to the provided leaves
-    pub fn leaves(&self) -> &[Option<T>; MERKLE_WIDTH] {
+    pub fn leaves(&self) -> &[Option<Scalar>; MERKLE_WIDTH] {
         &self.leaves
     }
 
@@ -32,7 +32,7 @@ impl<T: PoseidonLeaf> MerkleTree<T> {
     /// # Panics
     ///
     /// Panics if `index` is out of bounds.
-    pub fn insert_unchecked(&mut self, index: usize, leaf: T) {
+    pub fn insert_unchecked(&mut self, index: usize, leaf: Scalar) {
         self.root = None;
         self.leaves[index].replace(leaf);
     }
@@ -42,7 +42,7 @@ impl<T: PoseidonLeaf> MerkleTree<T> {
     /// # Panics
     ///
     /// Panics if `index` is out of bounds.
-    pub fn remove_unchecked(&mut self, index: usize) -> Option<T> {
+    pub fn remove_unchecked(&mut self, index: usize) -> Option<Scalar> {
         self.root = None;
         self.leaves[index].take()
     }

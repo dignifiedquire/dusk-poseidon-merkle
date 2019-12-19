@@ -9,18 +9,19 @@ use lazy_static::*;
 use serde::{Deserialize, Serialize};
 
 pub use crate::poseidon::Poseidon;
-pub use curve25519_dalek::scalar::Scalar;
+pub use paired::bls12_381::Fr as Scalar;
+// pub use curve25519_dalek::scalar::Scalar;
 pub use error::Error;
-pub use merkle::MerkleTree;
-pub use proof::Proof;
+// pub use merkle::MerkleTree;
+// pub use proof::Proof;
 
 #[cfg(feature = "big-merkle")]
 pub use big_merkle::{BigMerkleTree, BigProof, MerkleCoord, MerkleRange};
 
 mod error;
-mod merkle;
+// mod merkle;
 mod poseidon;
-mod proof;
+// mod proof;
 
 #[cfg(feature = "big-merkle")]
 mod big_merkle;
@@ -34,7 +35,7 @@ lazy_static! {
     };
     static ref MDS_MATRIX: [[Scalar; WIDTH]; WIDTH] = {
         let bytes = include_bytes!("../assets/mds.bin");
-        assert_eq!(bytes.len(), (WIDTH * WIDTH) << 5);
+        // assert_eq!(bytes.len(), (WIDTH * WIDTH) << 5);
         unsafe { std::ptr::read(bytes.as_ptr() as *const _) }
     };
 }
@@ -44,17 +45,7 @@ lazy_static! {
 /// The implementation must be serializable for the [`BigMerkleTree`] storage
 #[cfg(feature = "big-merkle")]
 pub trait PoseidonLeaf:
-    Copy
-    + From<u64>
-    + From<Scalar>
-    + From<[u8; 32]>
-    + PartialEq
-    + ops::MulAssign
-    + ops::AddAssign
-    + Serialize
-    + for<'d> Deserialize<'d>
-    + Send
-    + Sync
+    Copy + From<Scalar> + From<[u8; 32]> + PartialEq + Serialize + for<'d> Deserialize<'d> + Send + Sync
 {
 }
 
@@ -65,7 +56,11 @@ pub trait PoseidonLeaf:
 {
 }
 
-impl PoseidonLeaf for Scalar {}
+/// convert
+pub fn scalar_from_u64(i: u64) -> Scalar {
+    use ff::{PrimeField, PrimeFieldRepr};
+    Scalar::from_repr(paired::bls12_381::FrRepr::from(i)).unwrap()
+}
 
 #[cfg(test)]
 mod tests {

@@ -14,6 +14,8 @@ rocksdb = { version = "0.12", optional = true }
 bincode = { version = "1.2", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 num_cpus = { version = "1.10", optional = true }
+ff = "0.5.0"
+paired = "0.16.0"
 
 [dependencies.curve25519-dalek]
 branch = "feature/compressed-try-from"
@@ -26,6 +28,10 @@ rand = "0.7.0"
 sha2 = "0.8"
 tempdir = "0.3"
 
+[build-dependencies]
+paired = "0.16.0"
+ff = "0.5.0"
+
 [build-dependencies.curve25519-dalek]
 branch = "feature/compressed-try-from"
 git = "https://github.com/dusk-network/curve25519-dalek.git"
@@ -34,14 +40,14 @@ git = "https://github.com/dusk-network/curve25519-dalek.git"
 name = "hash"
 harness = false
 
-[[bench]]
-name = "merkle"
-harness = false
+# [[bench]]
+# name = "merkle"
+# harness = false
 
-[[bench]]
-name = "big_merkle"
-harness = false
-required-features = ["big-merkle"]
+# [[bench]]
+# name = "big_merkle"
+# harness = false
+# required-features = ["big-merkle"]
 
 [profile.bench]
 lto = true

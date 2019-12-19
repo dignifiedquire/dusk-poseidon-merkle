@@ -1,8 +1,14 @@
-use curve25519_dalek::scalar::Scalar;
+use ff::{Field, PrimeField};
+use paired::bls12_381::Fr as Scalar;
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+
+pub fn scalar_from_u64(i: u64) -> Scalar {
+    use ff::{PrimeField, PrimeFieldRepr};
+    Scalar::from_repr(paired::bls12_381::FrRepr::from(i)).unwrap()
+}
 
 fn generate_mds(t: usize) -> Vec<Vec<Scalar>> {
     let mut matrix: Vec<Vec<Scalar>> = Vec::with_capacity(t);
@@ -17,8 +23,8 @@ fn generate_mds(t: usize) -> Vec<Vec<Scalar>> {
     // det(M) = (ad - bc) ; if a == b and c == d => det(M) =0
     // For an MDS matrix, every possible mxm submatrix, must have det(M) != 0
     for i in 0..t {
-        let x = Scalar::from((i) as u64);
-        let y = Scalar::from((i + t) as u64);
+        let x = scalar_from_u64((i) as u64);
+        let y = scalar_from_u64((i + t) as u64);
         xs.push(x);
         ys.push(y);
     }
@@ -27,7 +33,9 @@ fn generate_mds(t: usize) -> Vec<Vec<Scalar>> {
         let mut row: Vec<Scalar> = Vec::with_capacity(t);
         for j in 0..t {
             // Generate the entry at (i,j)
-            let entry = (xs[i] + ys[j]).invert();
+            let mut entry = xs[i];
+            entry.add_assign(&ys[i]);
+            entry = entry.inverse().unwrap();
             row.insert(j, entry);
         }
         matrix.push(row);
@@ -86,7 +94,10 @@ pub(crate) const MERKLE_HEIGHT: usize = {};
         .into_iter()
         .flatten()
         .fold(vec![], |mut v, scalars| {
-            v.extend_from_slice(scalars.as_bytes());
+            let raw = scalars.into_repr();
+            let raw_u64: &[u64] = raw.as_ref();
+            let raw_u8: &[u8] = unsafe { std::mem::transmute(raw_u64) };
+            v.extend_from_slice(raw_u8);
             v
         });
 
